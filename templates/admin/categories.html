@@ -1,0 +1,144 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Categories — CanvasCulture Admin{% endblock %}
+{% block admin_css %}
+<style>
+  .cat-row td { vertical-align: middle; }
+  .inline-edit { display: none; align-items: center; gap: 0.5rem; }
+  .inline-edit.active { display: flex; }
+  .name-display { display: flex; align-items: center; gap: 0.5rem; }
+  .name-display.hidden { display: none; }
+  .rename-input {
+    background: var(--bg);
+    border: 1.5px solid var(--navy);
+    border-radius: 6px;
+    padding: 0.38rem 0.7rem;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--text);
+    width: 180px;
+    outline: none;
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1>Categories</h1>
+    <p>{{ categories|length }} total</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:2rem;align-items:start">
+
+  <!-- ── ADD FORM ── -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;padding:1.8rem;box-shadow:var(--shadow-sm)">
+    <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.2rem">
+      Add New Category
+    </h3>
+    <form method="post" action="{{ url_for('admin.categories') }}">
+      <div class="form-group">
+        <label>Category Name</label>
+        <input type="text" name="name" class="form-control" required placeholder="e.g. Watercolour" autofocus/>
+      </div>
+      <button type="submit" class="btn btn-gold btn-sm" style="width:100%">
+        <i class="fa fa-plus" style="margin-right:0.4rem"></i> Add Category
+      </button>
+    </form>
+  </div>
+
+  <!-- ── CATEGORIES TABLE ── -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:var(--font-serif);font-size:1.05rem;font-weight:700;color:var(--navy)">All Categories</span>
+      <span class="tag tag-navy">{{ categories|length }} total</span>
+    </div>
+
+    {% if categories %}
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th style="text-align:center">Artworks</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr class="cat-row" id="row-{{ cat.id }}">
+
+          <!-- Name cell with inline edit toggle -->
+          <td>
+            <!-- Normal display -->
+            <div class="name-display" id="display-{{ cat.id }}">
+              <span style="font-weight:500;color:var(--navy)">{{ cat.name }}</span>
+            </div>
+            <!-- Inline rename form -->
+            <form class="inline-edit" id="edit-{{ cat.id }}"
+                  method="post" action="{{ url_for('admin.edit_category', id=cat.id) }}">
+              <input type="text" name="name" class="rename-input"
+                     value="{{ cat.name }}" required/>
+              <button type="submit" class="btn btn-gold btn-sm" title="Save">
+                <i class="fa fa-check"></i>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" title="Cancel"
+                      onclick="cancelEdit({{ cat.id }})">
+                <i class="fa fa-times"></i>
+              </button>
+            </form>
+          </td>
+
+          <td style="text-align:center">
+            {% if cat.artworks|length > 0 %}
+            <span class="badge badge-info">{{ cat.artworks|length }}</span>
+            {% else %}
+            <span style="color:var(--muted);font-size:0.78rem">—</span>
+            {% endif %}
+          </td>
+
+          <td style="text-align:right">
+            <div style="display:flex;gap:0.5rem;justify-content:flex-end" id="actions-{{ cat.id }}">
+              <button type="button" class="btn btn-outline btn-sm"
+                      onclick="startEdit({{ cat.id }}, '{{ cat.name|replace("'", "\\'") }}')">
+                <i class="fa fa-pen" style="margin-right:0.3rem"></i> Rename
+              </button>
+              <form method="post" action="{{ url_for('admin.delete_category', id=cat.id) }}"
+                    onsubmit="return confirm('Delete category \'{{ cat.name }}\'?')">
+                <button type="submit" class="btn btn-danger btn-sm"
+                        {% if cat.artworks %}title="Has artworks — reassign them first" style="opacity:0.5;cursor:not-allowed" onclick="return false"{% endif %}>
+                  <i class="fa fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:3rem;color:var(--muted)">
+      <i class="fa fa-tag" style="font-size:2rem;display:block;margin-bottom:1rem;opacity:0.3"></i>
+      No categories yet. Add one above.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+  function startEdit(id, currentName) {
+    document.getElementById('display-' + id).classList.add('hidden');
+    document.getElementById('edit-' + id).classList.add('active');
+    document.getElementById('actions-' + id).style.display = 'none';
+    const input = document.querySelector('#edit-' + id + ' input');
+    input.focus();
+    input.select();
+  }
+  function cancelEdit(id) {
+    document.getElementById('display-' + id).classList.remove('hidden');
+    document.getElementById('edit-' + id).classList.remove('active');
+    document.getElementById('actions-' + id).style.display = '';
+  }
+</script>
+{% endblock %}

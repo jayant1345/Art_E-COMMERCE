@@ -1,0 +1,85 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Order #{{ order.id }} — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1 style="font-family:var(--font-serif);font-size:1.8rem;font-weight:300">Order #{{ order.id }}</h1>
+    <p style="color:var(--grey);font-size:0.8rem">{{ order.created_at.strftime('%d %B %Y, %H:%M') }}</p>
+  </div>
+  <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start">
+  <!-- Main info -->
+  <div>
+    <div style="border:1px solid var(--border);padding:1.5rem;background:var(--dark-2);margin-bottom:1.5rem">
+      <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;margin-bottom:1rem">Customer</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.85rem">
+        <div><span style="color:var(--grey)">Name: </span>{{ order.customer_name }}</div>
+        <div><span style="color:var(--grey)">Email: </span>{{ order.customer_email }}</div>
+        <div><span style="color:var(--grey)">Phone: </span>{{ order.customer_phone }}</div>
+      </div>
+      <div style="margin-top:0.75rem;font-size:0.85rem">
+        <span style="color:var(--grey)">Address: </span>{{ order.customer_address }}
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border);padding:1.5rem;background:var(--dark-2);margin-bottom:1.5rem">
+      <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;margin-bottom:1rem">Items</h3>
+      {% for item in order.items %}
+      <div style="display:flex;gap:1rem;padding:0.75rem 0;border-bottom:1px solid var(--border);align-items:center">
+        <div style="flex:1">
+          <div>{{ item.artwork.title if item.artwork else 'Deleted Artwork' }}</div>
+          <div style="font-size:0.75rem;color:var(--grey)">Qty: {{ item.quantity }}</div>
+        </div>
+        <div style="color:var(--gold);font-family:var(--font-serif)">₹{{ '%.2f'|format(item.price * item.quantity) }}</div>
+      </div>
+      {% endfor %}
+      <div style="display:flex;justify-content:space-between;padding-top:1rem;font-family:var(--font-serif);font-size:1.1rem">
+        <span>Total</span>
+        <span style="color:var(--gold)">₹{{ '%.2f'|format(order.total) }}</span>
+      </div>
+    </div>
+
+    {% if order.payu_txnid %}
+    <div style="border:1px solid var(--border);padding:1.5rem;background:var(--dark-2)">
+      <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;margin-bottom:1rem">Payment</h3>
+      <div style="font-size:0.82rem;display:grid;gap:0.4rem">
+        <div><span style="color:var(--grey)">TXN ID: </span>{{ order.payu_txnid }}</div>
+        {% if order.payu_mihpayid %}<div><span style="color:var(--grey)">PayU ID: </span>{{ order.payu_mihpayid }}</div>{% endif %}
+        {% if order.payu_mode %}<div><span style="color:var(--grey)">Mode: </span>{{ order.payu_mode }}</div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar -->
+  <div>
+    <div style="border:1px solid var(--border);padding:1.5rem;background:var(--dark-2);margin-bottom:1rem">
+      <div style="margin-bottom:1rem">
+        <div style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-bottom:0.4rem">Payment Status</div>
+        <span class="badge {% if order.payment_status == 'Paid' %}badge-success{% elif order.payment_status == 'Failed' %}badge-danger{% else %}badge-warning{% endif %}" style="font-size:0.8rem;padding:0.3rem 0.8rem">
+          {{ order.payment_status }}
+        </span>
+      </div>
+      <div>
+        <div style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-bottom:0.4rem">Order Status</div>
+        <span class="badge badge-info" style="font-size:0.8rem;padding:0.3rem 0.8rem">{{ order.status }}</span>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border);padding:1.5rem;background:var(--dark-2)">
+      <h4 style="font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:1rem">Update Status</h4>
+      <form method="post" action="{{ url_for('admin.update_order_status', id=order.id) }}">
+        <select name="status" class="form-control" style="margin-bottom:0.8rem">
+          {% for s in ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'] %}
+          <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-gold btn-sm" style="width:100%">Update</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

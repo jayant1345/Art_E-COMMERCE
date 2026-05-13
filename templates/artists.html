@@ -1,0 +1,51 @@
+﻿{% extends "base.html" %}
+{% block title %}Artists — CanvasCulture{% endblock %}
+{% block extra_css %}
+<style>
+  .artists-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+  .artist-card { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem; }
+  .artist-avatar {
+    flex-shrink: 0;
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--dark-3); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; color: var(--grey); overflow: hidden;
+  }
+  .artist-avatar img { width: 100%; height: 100%; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,var(--dark-2),var(--dark))">
+  <div class="container">
+    <p class="section-sub">The Creators</p>
+    <h1 class="section-title">Our Artists</h1>
+  </div>
+</div>
+
+<section class="section container">
+  <div class="artists-grid">
+    {% for artist in artists %}
+    <a href="{{ url_for('main.artist_detail', id=artist.id) }}" class="card artist-card" style="text-decoration:none">
+      <div class="artist-avatar">
+        {% if artist.photo_url %}
+        <img src="{{ artist.photo_url | img_url }}" alt="{{ artist.name }}"/>
+        {% else %}
+        <i class="fa fa-user"></i>
+        {% endif %}
+      </div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:1.2rem;margin-bottom:0.4rem">{{ artist.name }}</div>
+        <p style="font-size:0.8rem;color:var(--grey);line-height:1.7">{{ artist.bio[:120] if artist.bio else '' }}{% if artist.bio and artist.bio|length > 120 %}…{% endif %}</p>
+        <div style="margin-top:0.8rem;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold)">
+          {{ artist.artworks|length }} Work{{ 's' if artist.artworks|length != 1 else '' }}
+        </div>
+      </div>
+    </a>
+    {% else %}
+    <p style="color:var(--grey);grid-column:1/-1">No artists yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+

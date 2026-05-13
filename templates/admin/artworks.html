@@ -1,0 +1,58 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Artworks — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1 style="font-family:var(--font-serif);font-size:1.8rem;font-weight:300">Artworks</h1>
+    <p style="color:var(--grey);font-size:0.8rem">{{ artworks|length }} total</p>
+  </div>
+  <a href="{{ url_for('admin.add_artwork') }}" class="btn btn-gold btn-sm">+ Add Artwork</a>
+</div>
+
+<div style="border:1px solid var(--border);background:var(--dark-2)">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Image</th><th>Title</th><th>Artist</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for artwork in artworks %}
+      <tr>
+        <td>
+          {% if artwork.image_url %}
+          <img src="{{ artwork.image_url | img_url }}" style="width:50px;height:40px;object-fit:cover;"/>
+          {% else %}
+          <div style="width:50px;height:40px;background:var(--dark-3);display:flex;align-items:center;justify-content:center;color:var(--border);font-size:1rem"><i class="fa fa-image"></i></div>
+          {% endif %}
+        </td>
+        <td>
+          <div>{{ artwork.title }}</div>
+          {% if artwork.is_featured %}<span class="badge badge-info" style="margin-top:0.2rem">Featured</span>{% endif %}
+        </td>
+        <td style="color:var(--grey)">{{ artwork.artist.name if artwork.artist else '—' }}</td>
+        <td style="color:var(--grey)">{{ artwork.category.name if artwork.category else '—' }}</td>
+        <td style="color:var(--gold);font-family:var(--font-serif)">₹{{ '%.0f'|format(artwork.price) }}</td>
+        <td>{{ artwork.stock }}</td>
+        <td>
+          <span class="badge {% if artwork.is_available %}badge-success{% else %}badge-danger{% endif %}">
+            {{ 'Available' if artwork.is_available else 'Unavailable' }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:0.5rem">
+            <a href="{{ url_for('admin.edit_artwork', id=artwork.id) }}" class="btn btn-outline btn-sm">Edit</a>
+            <form action="{{ url_for('admin.delete_artwork', id=artwork.id) }}" method="post" onsubmit="return confirm('Delete this artwork?')">
+              <button type="submit" class="btn btn-danger btn-sm">Del</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" style="text-align:center;color:var(--grey);padding:3rem">No artworks yet. <a href="{{ url_for('admin.add_artwork') }}" style="color:var(--gold)">Add one →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

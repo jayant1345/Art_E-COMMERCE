@@ -1,0 +1,199 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Site Settings â€” CanvasCulture Admin{% endblock %}
+{% block admin_css %}
+<style>
+  .slides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .slide-thumb {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 16/7;
+    background: var(--bg-3);
+  }
+  .slide-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .slide-thumb .overlay {
+    position: absolute; inset: 0;
+    background: rgba(20,36,64,0.62);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+    gap: 0.5rem;
+  }
+  .slide-thumb:hover .overlay { opacity: 1; }
+  .slide-order {
+    position: absolute; top: 6px; left: 8px;
+    background: rgba(0,0,0,0.55); color: #fff;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.15rem 0.5rem; border-radius: 4px;
+  }
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-3);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--amber);
+    background: var(--amber-pale);
+  }
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1>Site Settings</h1>
+    <p>Manage hero carousel &amp; homepage text</p>
+  </div>
+  <a href="{{ url_for('main.index') }}" target="_blank" class="btn btn-outline btn-sm">
+    <i class="fa fa-external-link-alt" style="margin-right:0.4rem"></i> View Homepage
+  </a>
+</div>
+
+<div style="max-width:840px;display:flex;flex-direction:column;gap:1.6rem">
+
+  <!-- â”€â”€ CAROUSEL SLIDES â”€â”€ -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div style="padding:1rem 1.4rem;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <i class="fa fa-images" style="color:var(--amber)"></i>
+        <span style="font-family:var(--font-serif);font-size:1.05rem;font-weight:700;color:var(--navy)">Hero Carousel</span>
+        <span class="badge badge-info">{{ slides|length }} slide{{ 's' if slides|length != 1 else '' }}</span>
+      </div>
+      <span style="font-size:0.72rem;color:var(--muted)">Slides auto-advance every 7 seconds</span>
+    </div>
+    <div style="padding:1.4rem">
+
+      <!-- Upload zone -->
+      <form method="post" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="action" value="add_slides"/>
+        <div class="upload-zone" id="uploadZone" style="position:relative">
+          <input type="file" name="slides" multiple accept="image/*" id="slideInput"
+                 onchange="handleFiles(this)"/>
+          <i class="fa fa-cloud-upload-alt" style="font-size:2.2rem;color:var(--amber);margin-bottom:0.75rem;display:block"></i>
+          <div style="font-weight:600;color:var(--navy);margin-bottom:0.3rem">Drop images here or click to browse</div>
+          <div style="font-size:0.76rem;color:var(--muted)">Select multiple images at once Â· JPG / PNG / WebP Â· Max 16MB each</div>
+        </div>
+
+        <!-- Preview before upload -->
+        <div id="previewGrid" style="display:none;margin-top:1rem">
+          <div style="font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem">
+            Ready to upload
+          </div>
+          <div id="previewItems" style="display:flex;flex-wrap:wrap;gap:0.6rem"></div>
+          <button type="submit" class="btn btn-gold btn-sm" style="margin-top:1rem">
+            <i class="fa fa-upload" style="margin-right:0.4rem"></i>
+            Upload Slides
+          </button>
+        </div>
+      </form>
+
+      <!-- Current slides grid -->
+      {% if slides %}
+      <div style="margin-top:1.4rem">
+        <div style="font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem">
+          Current Slides
+        </div>
+        <div class="slides-grid">
+          {% for slide in slides %}
+          <div class="slide-thumb">
+            <span class="slide-order">#{{ loop.index }}</span>
+            <img src="{{ slide.image_url | img_url }}" alt="Slide {{ loop.index }}"/>
+            <div class="overlay">
+              <form method="post"
+                    onsubmit="return confirm('Remove slide #{{ loop.index }}?')">
+                <input type="hidden" name="action" value="delete_slide"/>
+                <input type="hidden" name="slide_id" value="{{ slide.id }}"/>
+                <button type="submit" class="btn btn-danger btn-sm">
+                  <i class="fa fa-trash" style="margin-right:0.3rem"></i> Remove
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div style="margin-top:1rem;text-align:center;padding:1.5rem;color:var(--muted);font-size:0.85rem">
+        <i class="fa fa-info-circle" style="margin-right:0.4rem"></i>
+        No slides yet â€” upload images above. Without slides the hero shows a solid navy background.
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- â”€â”€ HERO TEXT â”€â”€ -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div style="padding:1rem 1.4rem;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;gap:0.6rem">
+      <i class="fa fa-heading" style="color:var(--amber)"></i>
+      <span style="font-family:var(--font-serif);font-size:1.05rem;font-weight:700;color:var(--navy)">Hero Text</span>
+    </div>
+    <div style="padding:1.4rem">
+      <form method="post">
+        <input type="hidden" name="action" value="save_text"/>
+        <div class="form-group">
+          <label>Badge Label <span style="color:var(--muted);font-weight:400">(small text above headline)</span></label>
+          <input type="text" name="hero_sub" class="form-control"
+                 value="{{ hero_sub }}" placeholder="e.g. Curated Fine Art"/>
+        </div>
+        <div class="form-group">
+          <label>Main Headline</label>
+          <input type="text" name="hero_title" class="form-control"
+                 value="{{ hero_title }}" placeholder="e.g. Where Art Finds Its Collector"/>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem">
+            The headline auto-splits at the halfway word for a two-line display.
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-sm">
+          <i class="fa fa-save" style="margin-right:0.4rem"></i> Save Text
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Drag-and-drop highlight
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    document.getElementById('slideInput').files = e.dataTransfer.files;
+    handleFiles(document.getElementById('slideInput'));
+  });
+
+  function handleFiles(input) {
+    const grid = document.getElementById('previewGrid');
+    const items = document.getElementById('previewItems');
+    items.innerHTML = '';
+    if (!input.files.length) { grid.style.display = 'none'; return; }
+    grid.style.display = 'block';
+    Array.from(input.files).forEach((file, i) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const div = document.createElement('div');
+        div.style.cssText = 'position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);width:120px;height:52px;flex-shrink:0;';
+        div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover"/>
+          <span style="position:absolute;bottom:3px;left:4px;background:rgba(0,0,0,0.55);color:#fff;font-size:0.58rem;padding:1px 4px;border-radius:3px">${file.name.slice(0,14)}</span>`;
+        items.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+{% endblock %}

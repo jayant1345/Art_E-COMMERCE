@@ -1,0 +1,63 @@
+﻿{% extends "base.html" %}
+{% block title %}Checkout — CanvasCulture{% endblock %}
+{% block extra_css %}
+<style>
+  .checkout-layout { display: grid; grid-template-columns: 1fr 320px; gap: 3rem; align-items: start; }
+  @media (max-width: 860px) { .checkout-layout { grid-template-columns: 1fr; } }
+  .order-box { border: 1px solid var(--border); padding: 1.8rem; position: sticky; top: 80px; }
+  .order-row { display: flex; justify-content: space-between; padding: 0.45rem 0; font-size: 0.82rem; color: var(--grey); }
+  .order-total { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem; font-family: var(--font-serif); font-size: 1.3rem; color: var(--off-white); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:3rem;padding-bottom:4rem">
+  <p class="section-sub">Checkout</p>
+  <h1 class="section-title">Your Details</h1>
+  <hr class="divider"/>
+
+  <div class="checkout-layout">
+    <!-- Form -->
+    <form method="post">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" name="name" class="form-control" required placeholder="Your full name"/>
+      </div>
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" name="email" class="form-control" required placeholder="email@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" name="phone" class="form-control" required placeholder="+91 98765 43210"/>
+      </div>
+      <div class="form-group">
+        <label>Delivery Address *</label>
+        <textarea name="address" class="form-control" required rows="4" placeholder="Full delivery address including city, state, PIN code"></textarea>
+      </div>
+      <div style="border:1px solid var(--border);padding:1rem;margin:1.5rem 0;font-size:0.8rem;color:var(--grey);display:flex;gap:0.5rem;align-items:center">
+        <i class="fa fa-lock" style="color:var(--gold)"></i>
+        You will be redirected to PayU's secure payment page to complete your purchase.
+      </div>
+      <button type="submit" class="btn btn-gold" style="width:100%">Proceed to Payment</button>
+    </form>
+
+    <!-- Order Summary -->
+    <div class="order-box">
+      <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;margin-bottom:1rem">Order Summary</h3>
+      {% for item in items %}
+      <div class="order-row">
+        <span>{{ item.artwork.title[:24] }}{% if item.artwork.title|length > 24 %}…{% endif %} ×{{ item.qty }}</span>
+        <span>₹{{ '%.0f'|format(item.subtotal) }}</span>
+      </div>
+      {% endfor %}
+      <div class="order-row order-total">
+        <span>Total</span>
+        <span style="color:var(--gold)">₹{{ '%.2f'|format(total) }}</span>
+      </div>
+      <a href="{{ url_for('shop.cart') }}" style="display:block;margin-top:1rem;font-size:0.72rem;color:var(--grey);text-align:center;letter-spacing:0.1em;text-transform:uppercase">← Edit Cart</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

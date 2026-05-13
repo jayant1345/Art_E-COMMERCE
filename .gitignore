@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+instance/
+.env
+.env.local
+static/images/uploads/
+*.db
+*.sqlite3
+*.zip
+/payment.html
+/payment_failed.html

@@ -1,0 +1,87 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Artists â€” CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1>Artists</h1>
+    <p>{{ artists|length }} artist{{ 's' if artists|length != 1 else '' }} registered</p>
+  </div>
+  <a href="{{ url_for('admin.add_artist') }}" class="btn btn-gold btn-sm">
+    <i class="fa fa-plus" style="margin-right:0.4rem"></i> Add Artist
+  </a>
+</div>
+
+<div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Bio</th>
+        <th style="text-align:center">Works</th>
+        <th style="text-align:center">Portal</th>
+        <th style="text-align:right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for artist in artists %}
+      <tr>
+        <td>
+          {% if artist.photo_url %}
+          <img src="{{ artist.photo_url | img_url }}"
+               style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--border)"/>
+          {% else %}
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--bg-3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem">
+            <i class="fa fa-user"></i>
+          </div>
+          {% endif %}
+        </td>
+        <td>
+          <div style="font-weight:600;color:var(--navy)">{{ artist.name }}</div>
+        </td>
+        <td style="color:var(--muted);font-size:0.8rem;max-width:260px">
+          {{ artist.bio[:80] if artist.bio else 'â€”' }}{% if artist.bio and artist.bio|length > 80 %}â€¦{% endif %}
+        </td>
+        <td style="text-align:center">
+          {% if artist.artworks|length > 0 %}
+          <span class="badge badge-info">{{ artist.artworks|length }}</span>
+          {% else %}
+          <span style="color:var(--muted);font-size:0.78rem">â€”</span>
+          {% endif %}
+        </td>
+        <td style="text-align:center">
+          {% if artist.account %}
+          <span class="badge badge-teal" title="{{ artist.account.email }}">
+            <i class="fa fa-key" style="margin-right:0.25rem"></i> Active
+          </span>
+          {% else %}
+          <span style="color:var(--muted);font-size:0.75rem">â€”</span>
+          {% endif %}
+        </td>
+        <td style="text-align:right">
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <a href="{{ url_for('admin.edit_artist', id=artist.id) }}" class="btn btn-outline btn-sm">
+              <i class="fa fa-pen" style="margin-right:0.3rem"></i> Edit
+            </a>
+            <form method="post" action="{{ url_for('admin.delete_artist', id=artist.id) }}"
+                  onsubmit="return confirm('Delete artist \'{{ artist.name }}\'? This cannot be undone.')">
+              <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fa fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:3.5rem;color:var(--muted)">
+          <i class="fa fa-user" style="font-size:2.5rem;display:block;margin-bottom:1rem;opacity:0.25"></i>
+          No artists yet.
+          <a href="{{ url_for('admin.add_artist') }}" style="color:var(--amber);font-weight:600;margin-left:0.3rem">Add one â†’</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

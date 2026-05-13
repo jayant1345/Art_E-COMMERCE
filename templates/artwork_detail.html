@@ -1,0 +1,119 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ artwork.title }} — CanvasCulture{% endblock %}
+{% block extra_css %}
+<style>
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    padding: 4rem 0;
+  }
+  @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+  .artwork-image {
+    aspect-ratio: 4/3;
+    background: var(--dark-3);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .artwork-image img { width: 100%; height: 100%; object-fit: cover; }
+  .artwork-image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; color: var(--border);
+  }
+  .artwork-title { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .artwork-price { font-family: var(--font-serif); font-size: 2rem; color: var(--gold); margin: 1.5rem 0; }
+  .meta-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.82rem; }
+  .meta-label { color: var(--grey); min-width: 90px; }
+  .meta-value { color: var(--off-white); }
+  .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .rel-thumb { aspect-ratio: 4/3; background: var(--dark-3); overflow: hidden; }
+  .rel-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+  .rel-card:hover .rel-thumb img { transform: scale(1.06); }
+  .rel-info { padding: 0.6rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Breadcrumb -->
+  <nav style="padding:1.5rem 0;font-size:0.72rem;color:var(--grey);letter-spacing:0.08em">
+    <a href="{{ url_for('main.index') }}" style="color:var(--grey)">Home</a>
+    <span style="margin:0 0.5rem">›</span>
+    <a href="{{ url_for('main.gallery') }}" style="color:var(--grey)">Gallery</a>
+    <span style="margin:0 0.5rem">›</span>
+    <span style="color:var(--off-white)">{{ artwork.title }}</span>
+  </nav>
+
+  <div class="detail-grid">
+    <!-- Image -->
+    <div class="artwork-image">
+      {% if artwork.image_url %}
+      <img src="{{ artwork.image_url | img_url }}" alt="{{ artwork.title }}"/>
+      {% else %}
+      <div class="artwork-image-placeholder"><i class="fa fa-image"></i></div>
+      {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div>
+      {% if artwork.category %}
+      <p class="section-sub" style="margin-bottom:0.5rem">{{ artwork.category.name }}</p>
+      {% endif %}
+      <h1 class="artwork-title">{{ artwork.title }}</h1>
+      {% if artwork.artist %}
+      <a href="{{ url_for('main.artist_detail', id=artwork.artist.id) }}" style="color:var(--grey);font-size:0.85rem">
+        by {{ artwork.artist.name }}
+      </a>
+      {% endif %}
+
+      <div class="artwork-price">₹{{ '%.0f'|format(artwork.price) }}</div>
+
+      <p style="color:var(--grey);line-height:1.8;margin-bottom:2rem">{{ artwork.description or '' }}</p>
+
+      <div style="border:1px solid var(--border);padding:1.2rem;margin-bottom:2rem">
+        {% if artwork.medium %}<div class="meta-row"><span class="meta-label">Medium</span><span class="meta-value">{{ artwork.medium }}</span></div>{% endif %}
+        {% if artwork.dimensions %}<div class="meta-row"><span class="meta-label">Dimensions</span><span class="meta-value">{{ artwork.dimensions }}</span></div>{% endif %}
+        {% if artwork.year %}<div class="meta-row"><span class="meta-label">Year</span><span class="meta-value">{{ artwork.year }}</span></div>{% endif %}
+        <div class="meta-row"><span class="meta-label">Availability</span><span class="meta-value" style="color:{% if artwork.is_available %}#4caf50{% else %}#f44336{% endif %}">{% if artwork.is_available %}Available{% else %}Sold{% endif %}</span></div>
+      </div>
+
+      {% if artwork.is_available %}
+      <form action="{{ url_for('shop.add_to_cart', art_id=artwork.id) }}" method="post" style="display:flex;gap:1rem;flex-wrap:wrap">
+        <button type="submit" class="btn btn-gold">Add to Cart</button>
+        <a href="{{ url_for('shop.cart') }}" class="btn btn-outline">View Cart</a>
+      </form>
+      {% else %}
+      <p class="btn btn-outline" style="cursor:default;opacity:0.5">Sold Out</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Related Works -->
+  {% if related %}
+  <section style="padding:3rem 0;border-top:1px solid var(--border)">
+    <p class="section-sub">You May Also Like</p>
+    <h2 class="section-title" style="font-size:1.8rem;margin-bottom:1.5rem">Related Works</h2>
+    <div class="related-grid">
+      {% for r in related %}
+      <a href="{{ url_for('main.artwork_detail', id=r.id) }}" class="card rel-card">
+        <div class="rel-thumb">
+          {% if r.image_url %}
+          <img src="{{ r.image_url | img_url }}" alt="{{ r.title }}"/>
+          {% else %}
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--border);font-size:2rem"><i class="fa fa-image"></i></div>
+          {% endif %}
+        </div>
+        <div class="rel-info">
+          <div style="font-family:var(--font-serif);font-size:1rem;margin-bottom:0.2rem">{{ r.title }}</div>
+          <div style="color:var(--gold);font-size:0.9rem">₹{{ '%.0f'|format(r.price) }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+

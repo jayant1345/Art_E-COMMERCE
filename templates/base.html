@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}CanvasCulture Studio{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --navy:       #1e3050;
+      --navy-lt:    #2c4a7c;
+      --amber:      #c07c2e;
+      --amber-lt:   #d9973a;
+      --amber-pale: #f0e0c4;
+      --rose:       #b5493a;
+      --sage:       #4a7c59;
+      --teal:       #2a7f84;
+
+      --bg:         #e8dfd4;
+      --bg-2:       #f2e9de;
+      --bg-3:       #ddd3c6;
+      --bg-4:       #cfc4b5;
+
+      --text:       #1a1410;
+      --text-2:     #3a3028;
+      --muted:      #7a7060;
+      --border:     #c8bfb0;
+      --border-lt:  #d8d0c2;
+
+      --white:      #faf5ef;
+      --shadow-sm:  0 1px 4px rgba(30,48,80,0.07), 0 2px 12px rgba(30,48,80,0.05);
+      --shadow-md:  0 4px 16px rgba(30,48,80,0.1), 0 1px 4px rgba(30,48,80,0.06);
+      --shadow-lg:  0 12px 40px rgba(30,48,80,0.13), 0 2px 8px rgba(30,48,80,0.06);
+
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans:  'DM Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 0% 0%,   rgba(192,124,46,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 100% 50%, rgba(74,124,89,0.07)  0%, transparent 50%),
+        radial-gradient(ellipse at 40% 100%, rgba(181,73,58,0.07)  0%, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(232,223,212,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-brand {
+      font-family: var(--font-serif);
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.01em;
+    }
+    .nav-brand em { font-style: italic; color: var(--amber); }
+    .nav-links { display: flex; align-items: center; gap: 2.2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 2px; background: var(--amber);
+      transform: scaleX(0); transition: transform 0.2s; border-radius: 2px;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--navy); }
+    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+    .nav-admin-link { color: var(--amber) !important; }
+    .nav-cart {
+      position: relative; width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-2);
+      transition: all 0.2s; cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-cart:hover { border-color: var(--navy); background: var(--navy); }
+    .nav-cart:hover i { color: var(--white) !important; }
+    .cart-badge {
+      position: absolute; top: -7px; right: -7px;
+      background: var(--amber); color: var(--white);
+      font-size: 0.6rem; font-weight: 700;
+      width: 19px; height: 19px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(192,124,46,0.5);
+    }
+
+    /* ── FLASH MESSAGES ── */
+    .flashes { position: fixed; top: 76px; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; }
+    .flash {
+      padding: 0.85rem 1.3rem;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      font-size: 0.83rem;
+      min-width: 270px;
+      border-radius: 8px;
+      animation: slideIn 0.3s ease;
+      box-shadow: var(--shadow-md);
+      color: var(--text);
+    }
+    .flash.danger  { border-left-color: var(--rose); }
+    .flash.success { border-left-color: var(--sage); }
+    .flash.warning { border-left-color: var(--amber); }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      padding: 0.72rem 1.9rem;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: all 0.22s;
+    }
+    .btn-gold {
+      background: var(--navy);
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(30,48,80,0.25);
+    }
+    .btn-gold:hover { background: var(--navy-lt); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30,48,80,0.3); }
+    .btn-amber {
+      background: var(--amber);
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(192,124,46,0.3);
+    }
+    .btn-amber:hover { background: var(--amber-lt); transform: translateY(-2px); }
+    .btn-outline {
+      background: var(--bg-2);
+      color: var(--navy);
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-outline:hover { border-color: var(--navy); background: var(--navy); color: var(--white); }
+    .btn-sm { padding: 0.44rem 1rem; font-size: 0.72rem; }
+    .btn-danger { background: var(--rose); color: #fff; }
+    .btn-danger:hover { background: #9b3a2d; }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text-2);
+      margin-bottom: 0.45rem;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--bg-2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 0.7rem 0.9rem;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      outline: none;
+      border-radius: 8px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,48,80,0.1); }
+    select.form-control option { background: var(--white); color: var(--text); }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-2);
+      border: 1px solid var(--border-lt);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.28s, transform 0.28s, border-color 0.28s;
+      box-shadow: var(--shadow-sm);
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: auto;
+      background: var(--navy);
+      color: rgba(255,255,255,0.6);
+      padding: 2.8rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+    .footer-brand { font-family: var(--font-serif); font-size: 1.3rem; color: var(--white); font-weight: 700; }
+    .footer-brand em { color: var(--amber-lt); font-style: italic; }
+    footer a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
+    footer a:hover { color: var(--amber-lt); }
+
+    /* ── UTILITIES ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .section { padding: 5rem 0; }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.6rem;
+      line-height: 1.2;
+    }
+    .section-sub {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .divider {
+      border: none;
+      height: 2px;
+      background: linear-gradient(to right, var(--amber), transparent);
+      margin: 1.5rem 0;
+      border-radius: 2px;
+    }
+    .text-navy  { color: var(--navy); }
+    .text-amber { color: var(--amber); }
+    .text-muted { color: var(--muted); }
+    .price-tag  { font-family: var(--font-serif); font-size: 1.3rem; color: var(--amber); font-weight: 600; }
+
+    /* ── TAGS / CHIPS ── */
+    .tag {
+      display: inline-block; padding: 0.22rem 0.75rem;
+      border-radius: 999px; font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .tag-navy  { background: #e8edf5; color: var(--navy); }
+    .tag-amber { background: var(--amber-pale); color: var(--amber); }
+    .tag-sage  { background: #e6f0ea; color: var(--sage); }
+    .tag-rose  { background: #f9ecea; color: var(--rose); }
+    .tag-teal  { background: #e3f2f3; color: var(--teal); }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('main.index') }}" class="nav-brand">Canvas<em>Culture Studio</em></a>
+  <ul class="nav-links">
+    <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+    <li><a href="{{ url_for('main.artists') }}">Artists</a></li>
+    <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-admin-link">Admin</a></li>
+    {% endif %}
+    {% if current_user.is_authenticated and current_user.artist_profile %}
+    <li><a href="{{ url_for('artist.dashboard') }}" class="nav-admin-link" style="color:var(--sage)!important">My Studio</a></li>
+    {% endif %}
+  </ul>
+  <a href="{{ url_for('shop.cart') }}" class="nav-cart" id="cartLink" title="View Cart">
+    <i class="fa fa-shopping-bag" style="font-size:0.9rem;color:var(--muted);transition:color 0.2s"></i>
+    <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+  </a>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flashes">
+  {% for cat, msg in messages %}
+  <div class="flash {{ cat }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main style="flex:1">{% block content %}{% endblock %}</main>
+
+<footer>
+  <span class="footer-brand">Canvas<em>Culture Studio</em></span>
+  <span>© 2026 CanvasCulture Studio · All rights reserved.</span>
+  <span style="display:flex;gap:1.5rem">
+    <a href="{{ url_for('main.gallery') }}">Gallery</a>
+    <a href="{{ url_for('main.artists') }}">Artists</a>
+    <a href="{{ url_for('main.contact') }}">Contact</a>
+  </span>
+</footer>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => {
+      el.style.transition = 'opacity 0.5s';
+      el.style.opacity = '0';
+    });
+  }, 4500);
+
+  function updateCartBadge() {
+    fetch('{{ url_for("shop.cart_count") }}')
+      .then(r => r.json())
+      .then(d => {
+        const badge = document.getElementById('cartBadge');
+        if (d.count > 0) { badge.textContent = d.count; badge.style.display = 'flex'; }
+        else { badge.style.display = 'none'; }
+      }).catch(() => {});
+  }
+  updateCartBadge();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
+

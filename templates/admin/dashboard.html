@@ -1,0 +1,74 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Dashboard — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>Welcome back, <strong style="color:var(--navy)">{{ current_user.username }}</strong></p>
+  </div>
+  <a href="{{ url_for('admin.add_artwork') }}" class="btn btn-gold btn-sm">+ Add Artwork</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="color:var(--navy)"><i class="fa fa-image"></i></div>
+    <div class="stat-num">{{ total_artworks }}</div>
+    <div class="stat-lbl">Total Artworks</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="color:var(--teal)"><i class="fa fa-user"></i></div>
+    <div class="stat-num">{{ total_artists }}</div>
+    <div class="stat-lbl">Artists</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="color:var(--amber)"><i class="fa fa-shopping-bag"></i></div>
+    <div class="stat-num">{{ total_orders }}</div>
+    <div class="stat-lbl">Total Orders</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="color:var(--sage)"><i class="fa fa-rupee-sign"></i></div>
+    <div class="stat-num" style="font-size:1.6rem">₹{{ '%.0f'|format(revenue) }}</div>
+    <div class="stat-lbl">Revenue (Paid)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="color:{% if pending_orders > 0 %}var(--rose){% else %}var(--sage){% endif %}"><i class="fa fa-clock"></i></div>
+    <div class="stat-num" style="color:{% if pending_orders > 0 %}var(--rose){% else %}var(--sage){% endif %}">{{ pending_orders }}</div>
+    <div class="stat-lbl">Pending Orders</div>
+  </div>
+</div>
+
+<h2 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:0.8rem">Recent Orders</h2>
+<div style="border:1px solid var(--border-lt);border-radius:12px;background:var(--white);overflow:hidden;box-shadow:var(--shadow-sm)">
+  <table class="admin-table">
+    <thead>
+      <tr><th>#</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for order in recent_orders %}
+      <tr>
+        <td style="color:var(--muted);font-size:0.75rem">#{{ order.id }}</td>
+        <td>
+          <div style="color:var(--navy);font-weight:500">{{ order.customer_name }}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">{{ order.customer_email }}</div>
+        </td>
+        <td style="font-family:var(--font-serif);font-weight:700;color:var(--amber)">₹{{ '%.2f'|format(order.total) }}</td>
+        <td>
+          <span class="badge {% if order.payment_status == 'Paid' %}badge-success{% elif order.payment_status == 'Failed' %}badge-danger{% else %}badge-warning{% endif %}">
+            {{ order.payment_status }}
+          </span>
+        </td>
+        <td><span class="badge badge-info">{{ order.status }}</span></td>
+        <td style="color:var(--muted);font-size:0.75rem">{{ order.created_at.strftime('%d %b %Y') }}</td>
+        <td><a href="{{ url_for('admin.order_detail', id=order.id) }}" style="color:var(--navy);font-size:0.75rem;font-weight:600">View →</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:3rem">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div style="margin-top:1rem;text-align:right">
+  <a href="{{ url_for('admin.orders') }}" style="font-size:0.78rem;color:var(--navy);font-weight:600">View All Orders →</a>
+</div>
+{% endblock %}
+

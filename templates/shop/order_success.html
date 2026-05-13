@@ -1,0 +1,43 @@
+﻿{% extends "base.html" %}
+{% block title %}Order Confirmed — CanvasCulture{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:7rem 2rem">
+  <div style="width:90px;height:90px;border-radius:50%;background:#0a1f0a;border:2px solid #4caf50;
+       display:flex;align-items:center;justify-content:center;margin:0 auto 2rem;font-size:2.2rem;color:#4caf50">
+    <i class="fa fa-check"></i>
+  </div>
+  <p style="font-size:0.72rem;letter-spacing:0.25em;text-transform:uppercase;color:#4caf50;margin-bottom:1rem">Order Confirmed</p>
+  <h1 style="font-family:var(--font-serif);font-size:3rem;font-weight:300;margin-bottom:1rem">Thank You!</h1>
+  <p style="color:var(--grey);max-width:460px;margin:0 auto 2rem;line-height:1.8">
+    Your payment was successful. We'll prepare your artwork with care and be in touch shortly.
+  </p>
+
+  <div style="border:1px solid var(--border);display:inline-block;padding:1.5rem 3rem;margin-bottom:3rem;text-align:left;min-width:300px">
+    <div style="color:var(--gold);margin-bottom:1rem;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase">Order Details</div>
+    <div style="display:flex;justify-content:space-between;gap:2rem;padding:0.35rem 0;font-size:0.85rem;border-bottom:1px solid var(--border)">
+      <span style="color:var(--grey)">Order #</span><span>{{ order.id }}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:2rem;padding:0.35rem 0;font-size:0.85rem;border-bottom:1px solid var(--border)">
+      <span style="color:var(--grey)">Customer</span><span>{{ order.customer_name }}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:2rem;padding:0.35rem 0;font-size:0.85rem;border-bottom:1px solid var(--border)">
+      <span style="color:var(--grey)">Email</span><span>{{ order.customer_email }}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:2rem;padding:0.35rem 0;font-size:0.85rem;border-bottom:1px solid var(--border)">
+      <span style="color:var(--grey)">Amount Paid</span><span style="color:var(--gold);font-weight:500">₹{{ '%.2f'|format(order.total) }}</span>
+    </div>
+    {% if order.payu_mihpayid %}
+    <div style="display:flex;justify-content:space-between;gap:2rem;padding:0.35rem 0;font-size:0.82rem">
+      <span style="color:var(--grey)">PayU ID</span><span style="font-size:0.75rem">{{ order.payu_mihpayid }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <br/>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a href="{{ url_for('main.gallery') }}" class="btn btn-gold">Continue Shopping</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline">Back to Home</a>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,519 @@
+﻿{% extends "base.html" %}
+{% block title %}CanvasCulture Studio — Fine Art Curated{% endblock %}
+{% block extra_css %}
+<style>
+  /* ── HERO — no-carousel (split layout) ── */
+  .hero {
+    background: var(--navy);
+    min-height: 88vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  @media(max-width:860px){ .hero{grid-template-columns:1fr;} .hero-visual{display:none;} }
+
+  /* ── HERO — carousel mode (full-width) ── */
+  .hero.carousel-mode {
+    grid-template-columns: 1fr;
+    height: calc(100vh - 68px);
+    min-height: unset;
+  }
+  .hero.carousel-mode .hero-visual { display: none; }
+  .hero.carousel-mode .hero-content {
+    padding: 3rem 8% 4rem;
+    max-width: 740px;
+    align-self: center;
+  }
+
+  /* ── SLIDES ── */
+  .hero-slides { position:absolute; inset:0; z-index:0; }
+  .hero-slide {
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 1.4s ease-in-out;
+  }
+  .hero-slide.active { opacity: 1; }
+  .hero-slide img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+  }
+
+  /* ── OVERLAY ── */
+  .hero-overlay {
+    position:absolute; inset:0; z-index:1;
+    background: linear-gradient(
+      105deg,
+      rgba(15,28,54,0.88) 0%,
+      rgba(15,28,54,0.60) 55%,
+      rgba(15,28,54,0.25) 100%
+    );
+  }
+
+  /* ── DOTS ── */
+  .hero-dots {
+    position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%);
+    z-index:4; display:flex; gap:0.55rem; align-items:center;
+  }
+  .hero-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,0.3); border:2px solid rgba(255,255,255,0.15);
+    padding:0; cursor:pointer; transition: all 0.35s;
+  }
+  .hero-dot.active { background:var(--amber-lt); width:28px; border-radius:5px; border-color:var(--amber-lt); }
+  .hero-dot:hover { background:rgba(255,255,255,0.6); }
+
+  /* ── PREV / NEXT ARROWS ── */
+  .hero-arrow {
+    position:absolute; top:50%; transform:translateY(-50%);
+    z-index:4; width:46px; height:46px;
+    background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.25);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all 0.22s; color:#fff; font-size:0.9rem;
+    backdrop-filter: blur(4px);
+  }
+  .hero-arrow:hover { background:rgba(192,124,46,0.55); border-color:var(--amber-lt); }
+  .hero-arrow-prev { left:1.5rem; }
+  .hero-arrow-next { right:1.5rem; }
+
+  /* ── SLIDE COUNTER ── */
+  .hero-counter {
+    position:absolute; top:1.5rem; right:1.8rem; z-index:4;
+    font-size:0.72rem; font-weight:600; color:rgba(255,255,255,0.5);
+    letter-spacing:0.1em;
+  }
+  .hero-counter span { color:rgba(255,255,255,0.9); }
+
+  /* ── HERO CONTENT ── */
+  .hero-content { padding: 5rem 3rem 5rem 5rem; position:relative; z-index:2; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(192,124,46,0.2); border: 1px solid rgba(192,124,46,0.4);
+    border-radius: 999px; padding: 0.32rem 1rem;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--amber-lt); margin-bottom: 1.8rem;
+  }
+  .hero-badge-dot { width:6px;height:6px;border-radius:50%;background:var(--amber-lt); }
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
+    font-weight: 700; line-height: 1.1;
+    color: var(--white); margin-bottom: 1.5rem;
+  }
+  .hero-title em { color: var(--amber-lt); font-style: italic; }
+  .hero-desc { color: rgba(255,255,255,0.65); max-width: 440px; margin-bottom: 2.5rem; font-size: 0.96rem; line-height: 1.85; }
+  .hero-actions { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:3rem; align-items:center; }
+
+  .hero-btn-outline {
+    display: inline-block;
+    padding: 0.72rem 1.9rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 0.06em;
+    border-radius: 8px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+    border: 1.5px solid rgba(255,255,255,0.65);
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease;
+  }
+  .hero-btn-outline:hover {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(192,124,46,0.45);
+  }
+  .hero-divider { width:60px; height:2px; background:var(--amber); border-radius:2px; margin-bottom:2rem; opacity:0.6; }
+  .hero-stats { display:flex; gap:3rem; }
+  .hero-stat .num { font-family:var(--font-serif); font-size:2rem; font-weight:700; color:var(--white); }
+  .hero-stat .lbl { font-size:0.72rem; color:rgba(255,255,255,0.45); font-weight:500; margin-top:0.1rem; }
+
+  /* ── MOSAIC (no-carousel only) ── */
+  .hero-visual {
+    height:100%; min-height:88vh;
+    display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+    gap:3px; position:relative; z-index:1;
+  }
+  .hero-tile { background:var(--bg-3); overflow:hidden; position:relative; }
+  .hero-tile img { width:100%; height:100%; object-fit:cover; opacity:0.85; }
+  .hero-tile-ph {
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:3rem;color:rgba(255,255,255,0.12);
+    background: linear-gradient(135deg, rgba(30,48,80,0.6), rgba(192,124,46,0.15));
+  }
+  .hero-tile:first-child { grid-row:1/3; }
+
+  /* ── ART CARDS ── */
+  .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1.6rem; }
+  .art-thumb { aspect-ratio:4/3; background:var(--bg-3); overflow:hidden; position:relative; }
+  .art-thumb img { width:100%;height:100%;object-fit:cover;transition:transform 0.5s; }
+  .art-card:hover .art-thumb img { transform:scale(1.07); }
+  .art-thumb-ph {
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:3rem;color:var(--border);
+    background:linear-gradient(135deg,var(--bg-3),var(--bg-4));
+  }
+  .art-overlay {
+    position:absolute;inset:0;
+    background:rgba(30,48,80,0.55);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity 0.3s;
+  }
+  .art-card:hover .art-overlay { opacity:1; }
+  .art-info { padding:1.1rem 1rem 1rem; }
+  .art-cat { font-size:0.63rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:0.25rem; }
+  .art-title { font-family:var(--font-serif);font-size:1.1rem;font-weight:600;color:var(--navy);margin-bottom:0.2rem; }
+  .art-artist { font-size:0.77rem;color:var(--muted);margin-bottom:0.7rem; }
+  .art-foot { display:flex;justify-content:space-between;align-items:center; }
+  .art-price { font-family:var(--font-serif);font-size:1.05rem;font-weight:700;color:var(--amber); }
+
+  /* ── CATEGORIES ── */
+  .cat-strip {
+    background:var(--navy);
+    padding:2.8rem 0;
+  }
+  .cat-grid { display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center; }
+  .cat-pill {
+    border:1.5px solid rgba(255,255,255,0.18);
+    border-radius:999px;
+    padding:0.55rem 1.5rem;
+    font-size:0.76rem;font-weight:500;
+    color:rgba(255,255,255,0.6);
+    transition:all 0.22s;
+  }
+  .cat-pill:hover { border-color:var(--amber-lt);color:var(--amber-lt);background:rgba(192,124,46,0.12); }
+
+  /* ── ARTISTS ── */
+  .artist-card {
+    display:flex;gap:1.2rem;align-items:flex-start;
+    padding:1.5rem;
+    background:var(--bg-2);
+    border:1px solid var(--border-lt);
+    border-radius:12px;
+    box-shadow:var(--shadow-sm);
+    transition:all 0.25s;
+  }
+  .artist-card:hover { box-shadow:var(--shadow-lg);transform:translateY(-4px);border-color:var(--border); }
+  .artist-avatar {
+    flex-shrink:0;width:58px;height:58px;border-radius:50%;
+    background:var(--bg-3);border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.4rem;color:var(--muted);overflow:hidden;
+  }
+  .artist-avatar img { width:100%;height:100%;object-fit:cover; }
+
+  /* ── PROCESS STRIP ── */
+  .process-step { text-align:center;padding:1.5rem; }
+  .step-icon {
+    width:60px;height:60px;border-radius:50%;
+    background:var(--amber-pale);border:2px solid rgba(192,124,46,0.25);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 1rem;font-size:1.3rem;color:var(--amber);
+  }
+  .step-num { font-family:var(--font-serif);font-size:0.72rem;font-weight:700;color:var(--amber);letter-spacing:0.2em;margin-bottom:0.4rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<section class="hero {% if hero_slides %}carousel-mode{% endif %}" id="heroSection">
+
+  <!-- Carousel slides (img tags for precise object-fit control) -->
+  {% if hero_slides %}
+  <div class="hero-slides">
+    {% for slide in hero_slides %}
+    <div class="hero-slide {% if loop.first %}active{% endif %}">
+      <img src="{{ slide.image_url | img_url }}"
+           alt="Slide {{ loop.index }}"
+           loading="{% if loop.first %}eager{% else %}lazy{% endif %}"/>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Dark gradient overlay -->
+  <div class="hero-overlay"></div>
+
+  {% if hero_slides|length > 1 %}
+  <!-- Prev / Next arrows -->
+  <button class="hero-arrow hero-arrow-prev" onclick="goToSlide(window._heroCurrent - 1)" aria-label="Previous">
+    <i class="fa fa-chevron-left"></i>
+  </button>
+  <button class="hero-arrow hero-arrow-next" onclick="goToSlide(window._heroCurrent + 1)" aria-label="Next">
+    <i class="fa fa-chevron-right"></i>
+  </button>
+
+  <!-- Slide counter -->
+  <div class="hero-counter" id="heroCounter">
+    <span id="heroCountCurrent">1</span> / {{ hero_slides|length }}
+  </div>
+
+  <!-- Dot indicators -->
+  <div class="hero-dots">
+    {% for slide in hero_slides %}
+    <button class="hero-dot {% if loop.first %}active{% endif %}"
+            onclick="goToSlide({{ loop.index0 }})" aria-label="Slide {{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Hero text content -->
+  <div class="hero-content">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> {{ hero_sub }}</div>
+    <h1 class="hero-title">
+      {% set parts = hero_title.split(' ') %}
+      {% if parts|length > 3 %}
+        {{ parts[:parts|length//2]|join(' ') }}<br/><em>{{ parts[parts|length//2:]|join(' ') }}</em>
+      {% else %}
+        <em>{{ hero_title }}</em>
+      {% endif %}
+    </h1>
+    <p class="hero-desc">
+      CanvasCulture Studio brings extraordinary works from emerging and established artists directly to discerning collectors worldwide.
+    </p>
+    <div class="hero-divider"></div>
+    <div class="hero-actions">
+      <a href="{{ url_for('main.gallery') }}" class="btn btn-amber">Explore Gallery</a>
+      <a href="{{ url_for('main.artists') }}" class="btn hero-btn-outline">Meet the Artists</a>
+    </div>
+    {% if count_artworks or count_artists %}
+    <div class="hero-stats">
+      {% if count_artworks %}
+      <div class="hero-stat">
+        <div class="num">{{ count_artworks }}</div>
+        <div class="lbl">Artwork{{ 's' if count_artworks != 1 else '' }}</div>
+      </div>
+      {% endif %}
+      {% if count_artists %}
+      <div class="hero-stat">
+        <div class="num">{{ count_artists }}</div>
+        <div class="lbl">Artist{{ 's' if count_artists != 1 else '' }}</div>
+      </div>
+      {% endif %}
+      {% if count_orders %}
+      <div class="hero-stat">
+        <div class="num">{{ count_orders }}</div>
+        <div class="lbl">Order{{ 's' if count_orders != 1 else '' }} Fulfilled</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Mosaic panel (only without carousel) -->
+  {% if not hero_slides %}
+  <div class="hero-visual">
+    {% if featured and featured|length >= 3 %}
+      {% for i in range([featured|length, 4]|min) %}
+      <div class="hero-tile">
+        {% if featured[i].image_url %}
+        <img src="{{ featured[i].image_url | img_url }}" alt="{{ featured[i].title }}"/>
+        {% else %}
+        <div class="hero-tile-ph"><i class="fa fa-image"></i></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      {% for i in range(4) %}
+      <div class="hero-tile"><div class="hero-tile-ph"><i class="fa fa-image"></i></div></div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+</section>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots   = document.querySelectorAll('.hero-dot');
+  const counter = document.getElementById('heroCountCurrent');
+  if (slides.length < 2) return;
+
+  let current = 0;
+  window._heroCurrent = 0;
+  let timer;
+
+  function goToSlide(n) {
+    slides[current].classList.remove('active');
+    if (dots[current]) dots[current].classList.remove('active');
+    current = ((n % slides.length) + slides.length) % slides.length;
+    window._heroCurrent = current;
+    slides[current].classList.add('active');
+    if (dots[current]) dots[current].classList.add('active');
+    if (counter) counter.textContent = current + 1;
+  }
+
+  window.goToSlide = goToSlide;
+
+  function startTimer() {
+    timer = setInterval(() => goToSlide(current + 1), 7000);
+  }
+
+  const hero = document.getElementById('heroSection');
+  hero.addEventListener('mouseenter', () => clearInterval(timer));
+  hero.addEventListener('mouseleave', startTimer);
+
+  // Swipe support on mobile
+  let touchX = 0;
+  hero.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, {passive:true});
+  hero.addEventListener('touchend',   e => {
+    const diff = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) goToSlide(diff > 0 ? current + 1 : current - 1);
+  }, {passive:true});
+
+  startTimer();
+})();
+</script>
+
+<!-- ── FEATURED ARTWORKS ── -->
+<section class="section container">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <span class="section-sub">Handpicked for You</span>
+      <h2 class="section-title">Featured Works</h2>
+    </div>
+    <a href="{{ url_for('main.gallery') }}" style="font-size:0.8rem;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:0.4rem">
+      View all <i class="fa fa-arrow-right" style="font-size:0.7rem"></i>
+    </a>
+  </div>
+  <div class="art-grid">
+    {% for artwork in featured %}
+    <div class="card art-card">
+      <a href="{{ url_for('main.artwork_detail', id=artwork.id) }}">
+        <div class="art-thumb">
+          {% if artwork.image_url %}
+          <img src="{{ artwork.image_url | img_url }}" alt="{{ artwork.title }}"/>
+          {% else %}
+          <div class="art-thumb-ph"><i class="fa fa-image"></i></div>
+          {% endif %}
+          <div class="art-overlay">
+            <span class="btn btn-amber btn-sm">View Work</span>
+          </div>
+        </div>
+      </a>
+      <div class="art-info">
+        <div class="art-cat">{{ artwork.category.name if artwork.category else 'Art' }}</div>
+        <div class="art-title">{{ artwork.title }}</div>
+        <div class="art-artist">by {{ artwork.artist.name if artwork.artist else '—' }}</div>
+        <div class="art-foot">
+          <div class="art-price">₹{{ '%.0f'|format(artwork.price) }}</div>
+          <form action="{{ url_for('shop.add_to_cart', art_id=artwork.id) }}" method="post">
+            <button type="submit" class="btn btn-outline btn-sm">+ Cart</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:3rem">No featured artworks yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section style="background:var(--bg-3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4rem 0">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <span class="section-sub">Simple &amp; Secure</span>
+      <h2 class="section-title" style="font-size:2rem">How It Works</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem">
+      <div class="process-step">
+        <div class="step-icon"><i class="fa fa-search"></i></div>
+        <div class="step-num">01</div>
+        <div style="font-family:var(--font-serif);font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Discover</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.7">Browse our curated collection across styles, artists and categories.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-icon"><i class="fa fa-heart"></i></div>
+        <div class="step-num">02</div>
+        <div style="font-family:var(--font-serif);font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Choose</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.7">Select the work that resonates with you and add it to your cart.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-icon"><i class="fa fa-lock"></i></div>
+        <div class="step-num">03</div>
+        <div style="font-family:var(--font-serif);font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Pay Securely</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.7">Complete your purchase via PayU's 256-bit secure payment gateway.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-icon"><i class="fa fa-box"></i></div>
+        <div class="step-num">04</div>
+        <div style="font-family:var(--font-serif);font-size:1.05rem;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Delivered</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.7">Your artwork is carefully packed and delivered to your doorstep.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORIES ── -->
+<div class="cat-strip">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:1.8rem">
+      <span class="section-sub" style="color:var(--amber-lt)">Explore By</span>
+      <h2 class="section-title" style="color:var(--white);font-size:2rem">Categories</h2>
+    </div>
+    <div class="cat-grid">
+      {% for cat in categories %}
+      <a href="{{ url_for('main.gallery', category=cat.id) }}" class="cat-pill">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ── ARTISTS ── -->
+<section class="section container">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem">
+    <div>
+      <span class="section-sub">The Creators</span>
+      <h2 class="section-title">Featured Artists</h2>
+    </div>
+    <a href="{{ url_for('main.artists') }}" style="font-size:0.8rem;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:0.4rem">
+      All artists <i class="fa fa-arrow-right" style="font-size:0.7rem"></i>
+    </a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.4rem">
+    {% for artist in artists %}
+    <a href="{{ url_for('main.artist_detail', id=artist.id) }}" class="artist-card" style="text-decoration:none">
+      <div class="artist-avatar">
+        {% if artist.photo_url %}
+        <img src="{{ artist.photo_url | img_url }}" alt="{{ artist.name }}"/>
+        {% else %}<i class="fa fa-user"></i>{% endif %}
+      </div>
+      <div>
+        <div style="font-family:var(--font-serif);font-size:1.08rem;font-weight:600;color:var(--navy);margin-bottom:0.3rem">{{ artist.name }}</div>
+        <p style="font-size:0.8rem;color:var(--muted);line-height:1.6">{{ artist.bio[:90] if artist.bio else '' }}{% if artist.bio and artist.bio|length > 90 %}…{% endif %}</p>
+        <div style="margin-top:0.7rem"><span class="tag tag-amber">{{ artist.artworks|length }} Works</span></div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ── CTA STRIP ── -->
+<section style="background:linear-gradient(135deg,var(--navy) 60%,#2c4a7c 100%);padding:4.5rem 2rem;text-align:center">
+  <div class="container">
+    <div style="max-width:520px;margin:0 auto">
+      <span class="section-sub" style="color:var(--amber-lt)">Your Collection Awaits</span>
+      <h2 style="font-family:var(--font-serif);font-size:2.2rem;font-weight:700;color:var(--white);margin-bottom:1rem;line-height:1.2">
+        Find the Work That Speaks to You
+      </h2>
+      <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;font-size:0.92rem;line-height:1.8">
+        Every great collection begins with one extraordinary piece.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="{{ url_for('main.gallery') }}" class="btn btn-amber">Browse Gallery</a>
+        <a href="{{ url_for('main.contact') }}" class="btn hero-btn-outline">Get in Touch</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+

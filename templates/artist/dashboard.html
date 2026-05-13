@@ -1,0 +1,105 @@
+﻿{% extends "artist/base_artist.html" %}
+{% block title %}My Studio â€” CanvasCulture{% endblock %}
+{% block artist_content %}
+
+<div class="artist-header">
+  <div>
+    <h1>My Artworks</h1>
+    <p>{{ artworks|length }} artwork{{ 's' if artworks|length != 1 else '' }} in your portfolio</p>
+  </div>
+  <a href="{{ url_for('artist.add_artwork') }}" class="btn btn-gold btn-sm">
+    <i class="fa fa-plus" style="margin-right:0.4rem"></i> Add Artwork
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div style="font-size:1.1rem;color:var(--teal);margin-bottom:0.6rem"><i class="fa fa-image"></i></div>
+    <div class="stat-num">{{ artworks|length }}</div>
+    <div class="stat-lbl">Total Artworks</div>
+  </div>
+  <div class="stat-card">
+    <div style="font-size:1.1rem;color:var(--sage);margin-bottom:0.6rem"><i class="fa fa-check-circle"></i></div>
+    <div class="stat-num">{{ artworks|selectattr('is_available')|list|length }}</div>
+    <div class="stat-lbl">Listed for Sale</div>
+  </div>
+  <div class="stat-card">
+    <div style="font-size:1.1rem;color:var(--amber);margin-bottom:0.6rem"><i class="fa fa-shopping-bag"></i></div>
+    <div class="stat-num">{{ artworks|selectattr('id','in',sold_ids)|list|length }}</div>
+    <div class="stat-lbl">In Orders</div>
+  </div>
+</div>
+
+<!-- Artwork table -->
+<div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+  <table class="artist-table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th style="text-align:center">Status</th>
+        <th style="text-align:right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for artwork in artworks %}
+      <tr>
+        <td>
+          {% if artwork.image_url %}
+          <img src="{{ artwork.image_url | img_url }}"
+               style="width:52px;height:44px;border-radius:6px;object-fit:cover;border:1px solid var(--border)"/>
+          {% else %}
+          <div style="width:52px;height:44px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted)">
+            <i class="fa fa-image"></i>
+          </div>
+          {% endif %}
+        </td>
+        <td>
+          <div style="font-weight:600;color:var(--navy)">{{ artwork.title }}</div>
+          {% if artwork.medium %}<div style="font-size:0.75rem;color:var(--muted)">{{ artwork.medium }}</div>{% endif %}
+        </td>
+        <td style="color:var(--muted);font-size:0.82rem">
+          {{ artwork.category.name if artwork.category else 'â€”' }}
+        </td>
+        <td>
+          <span class="price-tag" style="font-size:1rem">â‚¹{{ '{:,.0f}'.format(artwork.price) }}</span>
+        </td>
+        <td style="text-align:center">
+          {% if artwork.is_available %}
+          <span class="badge badge-success">Listed</span>
+          {% else %}
+          <span class="badge badge-warning">Hidden</span>
+          {% endif %}
+        </td>
+        <td style="text-align:right">
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <a href="{{ url_for('main.artwork_detail', id=artwork.id) }}" class="btn btn-outline btn-sm" target="_blank" title="View public page">
+              <i class="fa fa-eye"></i>
+            </a>
+            <a href="{{ url_for('artist.edit_artwork', id=artwork.id) }}" class="btn btn-outline btn-sm">
+              <i class="fa fa-pen" style="margin-right:0.3rem"></i> Edit
+            </a>
+            <form method="post" action="{{ url_for('artist.delete_artwork', id=artwork.id) }}"
+                  onsubmit="return confirm('Remove \'{{ artwork.title }}\' from your portfolio?')">
+              <button type="submit" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:3.5rem;color:var(--muted)">
+          <i class="fa fa-paint-brush" style="font-size:2.5rem;display:block;margin-bottom:1rem;opacity:0.25"></i>
+          No artworks yet.
+          <a href="{{ url_for('artist.add_artwork') }}" style="color:var(--teal);font-weight:600;margin-left:0.3rem">Add your first â†’</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

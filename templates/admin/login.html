@@ -1,0 +1,57 @@
+﻿{% extends "base.html" %}
+{% block title %}Admin Login — CanvasCulture{% endblock %}
+{% block extra_css %}
+<style>
+  footer { display: none !important; }
+  /* Make main a flex container so login-wrap can fill it fully */
+  main { display: flex !important; align-items: stretch; }
+  .login-wrap {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; padding: 2rem;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-3) 100%);
+  }
+  .login-card {
+    width: 100%; max-width: 400px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .login-top { background: var(--navy); padding: 2.2rem; text-align: center; }
+  .login-brand { font-family: var(--font-serif); font-size: 2rem; font-weight: 700; color: var(--white); }
+  .login-brand em { color: var(--amber-lt); font-style: italic; }
+  .login-sub { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 0.3rem; }
+  .login-body { padding: 2.2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-top">
+      <div class="login-brand">Canvas<em>Culture Studio</em></div>
+      <div class="login-sub">Admin Access</div>
+    </div>
+    <div class="login-body">
+      <form method="post">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" class="form-control" required autofocus placeholder="admin@gallery.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" class="form-control" required placeholder="••••••••"/>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width:100%;margin-top:0.3rem">
+          <i class="fa fa-lock" style="margin-right:0.5rem"></i> Sign In
+        </button>
+      </form>
+      <div style="text-align:center;margin-top:1.5rem">
+        <a href="{{ url_for('main.index') }}" style="font-size:0.76rem;color:var(--muted);font-weight:500">← Back to Gallery</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

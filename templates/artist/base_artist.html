@@ -1,0 +1,124 @@
+﻿{% extends "base.html" %}
+{% block extra_css %}
+<style>
+  footer { display: none !important; }
+
+  .artist-layout { display: flex; min-height: calc(100vh - 68px); }
+  .artist-sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--bg-2);
+    border-right: 1px solid var(--border);
+    padding: 1.4rem 0;
+    position: sticky; top: 68px;
+    height: calc(100vh - 68px);
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(30,48,80,0.04);
+  }
+  .sidebar-brand { padding: 0 1.5rem 1rem; border-bottom: 1px solid var(--border-lt); margin-bottom: 0.5rem; }
+  .sidebar-brand-name { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--navy); }
+  .sidebar-brand-name em { color: var(--teal); font-style: italic; }
+  .sidebar-brand-sub { font-size: 0.62rem; font-weight: 600; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.1rem; }
+  .sidebar-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); padding: 0.6rem 1.5rem 0.3rem; margin-top: 0.5rem; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0.65rem 1.5rem;
+    font-size: 0.83rem; font-weight: 500; color: var(--muted);
+    transition: all 0.18s; border-left: 3px solid transparent;
+  }
+  .sidebar-link:hover { color: var(--navy); background: var(--bg-3); }
+  .sidebar-link.active { color: var(--teal); background: #e3f2f3; border-left-color: var(--teal); font-weight: 600; }
+  .sidebar-link i { width: 16px; text-align: center; }
+  .sidebar-logout { color: var(--rose) !important; }
+  .sidebar-logout:hover { background: #fdf0ee !important; }
+
+  .artist-main { flex: 1; padding: 1.8rem 2rem; background: var(--bg); }
+  .artist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.4rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-lt); }
+  .artist-header h1 { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; color: var(--navy); }
+  .artist-header p { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(175px,1fr)); gap: 0.9rem; margin-bottom: 1.4rem; }
+  .stat-card {
+    background: var(--bg-2); border: 1px solid var(--border-lt); border-radius: 10px;
+    padding: 1.1rem 1.3rem; box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .stat-num { font-family: var(--font-serif); font-size: 2.1rem; font-weight: 700; color: var(--navy); }
+  .stat-lbl { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 0.2rem; }
+
+  .artist-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .artist-table th {
+    text-align: left; padding: 0.8rem 1rem;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 2px solid var(--border); background: var(--bg-3);
+  }
+  .artist-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border-lt); vertical-align: middle; color: var(--text-2); }
+  .artist-table tr:last-child td { border-bottom: none; }
+  .artist-table tbody tr:hover td { background: var(--bg-3); }
+
+  .badge {
+    display: inline-block; padding: 0.2rem 0.65rem;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px;
+  }
+  .badge-success { background: #e6f4ed; color: var(--sage); }
+  .badge-warning { background: var(--amber-pale); color: var(--amber); }
+  .badge-danger  { background: #fcecea; color: var(--rose); }
+  .badge-info    { background: #e8edf5; color: var(--navy); }
+  .badge-teal    { background: #e3f2f3; color: var(--teal); }
+
+  {% block artist_css %}{% endblock %}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="artist-layout">
+  <aside class="artist-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">Canvas<em>Culture</em></div>
+      <div class="sidebar-brand-sub">Artist Studio</div>
+    </div>
+
+    {% if current_user.artist_profile %}
+    <div style="padding:0.9rem 1.5rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border-lt);margin-bottom:0.4rem">
+      {% if current_user.artist_profile.photo_url %}
+      <img src="{{ current_user.artist_profile.photo_url | img_url }}"
+           style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--teal)"/>
+      {% else %}
+      <div style="width:38px;height:38px;border-radius:50%;background:#e3f2f3;border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;color:var(--teal)">
+        <i class="fa fa-user"></i>
+      </div>
+      {% endif %}
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--navy)">{{ current_user.artist_profile.name }}</div>
+        <div style="font-size:0.68rem;color:var(--muted)">Artist</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-label">My Work</div>
+    <a href="{{ url_for('artist.dashboard') }}" class="sidebar-link {% if request.endpoint == 'artist.dashboard' %}active{% endif %}">
+      <i class="fa fa-th-large"></i> My Artworks
+    </a>
+    <a href="{{ url_for('artist.add_artwork') }}" class="sidebar-link {% if request.endpoint == 'artist.add_artwork' %}active{% endif %}">
+      <i class="fa fa-plus"></i> Add Artwork
+    </a>
+
+    <div class="sidebar-label">Public</div>
+    {% if current_user.artist_profile %}
+    <a href="{{ url_for('main.artist_detail', id=current_user.artist_profile.id) }}" class="sidebar-link" target="_blank">
+      <i class="fa fa-user-circle"></i> My Profile
+    </a>
+    {% endif %}
+    <a href="{{ url_for('main.gallery') }}" class="sidebar-link" target="_blank">
+      <i class="fa fa-external-link-alt"></i> View Gallery
+    </a>
+
+    <div style="border-top:1px solid var(--border-lt);margin-top:1rem;padding-top:0.8rem">
+      <a href="{{ url_for('artist.logout') }}" class="sidebar-link sidebar-logout">
+        <i class="fa fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
+  </aside>
+  <main class="artist-main">{% block artist_content %}{% endblock %}</main>
+</div>
+{% endblock %}

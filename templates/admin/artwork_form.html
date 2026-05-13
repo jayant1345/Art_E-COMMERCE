@@ -1,0 +1,85 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Edit' if artwork else 'Add' }} Artwork — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <h1 style="font-family:var(--font-serif);font-size:1.8rem;font-weight:300">
+    {{ 'Edit Artwork' if artwork else 'Add Artwork' }}
+  </h1>
+  <a href="{{ url_for('admin.artworks') }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div style="max-width:700px">
+  <form method="post" enctype="multipart/form-data">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Title *</label>
+        <input type="text" name="title" class="form-control" required value="{{ artwork.title if artwork else '' }}" placeholder="Artwork title"/>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Description</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Describe the artwork…">{{ artwork.description if artwork else '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Price (₹) *</label>
+        <input type="number" name="price" class="form-control" required step="0.01" min="0" value="{{ artwork.price if artwork else '' }}" placeholder="0.00"/>
+      </div>
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" name="stock" class="form-control" min="0" value="{{ artwork.stock if artwork else 1 }}"/>
+      </div>
+      <div class="form-group">
+        <label>Artist</label>
+        <select name="artist_id" class="form-control">
+          <option value="">— Select Artist —</option>
+          {% for a in artists %}
+          <option value="{{ a.id }}" {% if artwork and artwork.artist_id == a.id %}selected{% endif %}>{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select name="category_id" class="form-control">
+          <option value="">— Select Category —</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}" {% if artwork and artwork.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Medium</label>
+        <input type="text" name="medium" class="form-control" value="{{ artwork.medium if artwork else '' }}" placeholder="e.g. Oil on canvas"/>
+      </div>
+      <div class="form-group">
+        <label>Dimensions</label>
+        <input type="text" name="dimensions" class="form-control" value="{{ artwork.dimensions if artwork else '' }}" placeholder="e.g. 60 × 80 cm"/>
+      </div>
+      <div class="form-group">
+        <label>Year</label>
+        <input type="number" name="year" class="form-control" value="{{ artwork.year if artwork else '' }}" placeholder="2024"/>
+      </div>
+      <div class="form-group">
+        <label>Image</label>
+        <input type="file" name="image" class="form-control" accept="image/*"/>
+        {% if artwork and artwork.image_url %}
+        <div style="margin-top:0.5rem;font-size:0.72rem;color:var(--grey)">Current: {{ artwork.image_url }}</div>
+        {% endif %}
+      </div>
+      <div style="grid-column:1/-1;display:flex;gap:2rem;padding:0.5rem 0">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.82rem">
+          <input type="checkbox" name="is_available" {% if not artwork or artwork.is_available %}checked{% endif %}/>
+          Available for Sale
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.82rem">
+          <input type="checkbox" name="is_featured" {% if artwork and artwork.is_featured %}checked{% endif %}/>
+          Featured on Homepage
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;margin-top:1rem">
+      <button type="submit" class="btn btn-gold">{{ 'Update Artwork' if artwork else 'Add Artwork' }}</button>
+      <a href="{{ url_for('admin.artworks') }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

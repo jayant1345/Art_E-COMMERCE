@@ -1,0 +1,88 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Edit' if artist else 'Add' }} Artist — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <h1 style="font-family:var(--font-serif);font-size:1.8rem;font-weight:300">
+    {{ 'Edit Artist' if artist else 'Add Artist' }}
+  </h1>
+  <a href="{{ url_for('admin.artists') }}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div style="max-width:560px;display:flex;flex-direction:column;gap:1.4rem">
+
+  <!-- Artist Profile -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-lt);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div style="padding:0.9rem 1.4rem;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;gap:0.6rem">
+      <i class="fa fa-user" style="color:var(--amber)"></i>
+      <span style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--navy)">Artist Profile</span>
+    </div>
+    <div style="padding:1.4rem">
+      <form method="post" enctype="multipart/form-data" id="mainForm">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" name="name" class="form-control" required value="{{ artist.name if artist else '' }}" placeholder="Artist full name"/>
+        </div>
+        <div class="form-group">
+          <label>Biography</label>
+          <textarea name="bio" class="form-control" rows="5" placeholder="Artist background, style, achievements…">{{ artist.bio if artist else '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Profile Photo</label>
+          <input type="file" name="photo" class="form-control" accept="image/*"/>
+          {% if artist and artist.photo_url %}
+          <div style="margin-top:0.5rem;font-size:0.72rem;color:var(--muted)">Current: {{ artist.photo_url }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Portal account fields included in same form -->
+        <input type="hidden" name="_portal_section" value="1"/>
+        <div style="border-top:1px solid var(--border-lt);margin-top:1.2rem;padding-top:1.2rem">
+          <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem">
+            <i class="fa fa-key" style="color:var(--teal);font-size:0.85rem"></i>
+            <span style="font-size:0.85rem;font-weight:700;color:var(--navy)">Artist Portal Account</span>
+            {% if artist and artist.account %}
+            <span class="badge badge-teal">Active</span>
+            {% else %}
+            <span class="badge badge-info">Optional</span>
+            {% endif %}
+          </div>
+
+          {% if artist and artist.account %}
+          <div style="background:var(--bg-3);border:1px solid var(--border-lt);border-radius:8px;padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:var(--text-2)">
+            <i class="fa fa-envelope" style="color:var(--teal);margin-right:0.4rem"></i>
+            Login: <strong>{{ artist.account.email }}</strong>
+            &nbsp;·&nbsp; leave fields blank to keep unchanged
+          </div>
+          <div class="form-group">
+            <label>Change Email</label>
+            <input type="email" name="portal_email" class="form-control" placeholder="{{ artist.account.email }}"/>
+          </div>
+          <div class="form-group">
+            <label>New Password <span style="color:var(--muted);font-weight:400">(leave blank to keep current)</span></label>
+            <input type="password" name="portal_password" class="form-control" placeholder="••••••••"/>
+          </div>
+          {% else %}
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.9rem">
+            Fill both fields below to give this artist a login to the Artist Portal.
+          </div>
+          <div class="form-group">
+            <label>Portal Email</label>
+            <input type="email" name="portal_email" class="form-control" placeholder="artist@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Portal Password</label>
+            <input type="password" name="portal_password" class="form-control" placeholder="Choose a password"/>
+          </div>
+          {% endif %}
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:1rem">
+          <button type="submit" class="btn btn-gold">{{ 'Update Artist' if artist else 'Add Artist' }}</button>
+          <a href="{{ url_for('admin.artists') }}" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

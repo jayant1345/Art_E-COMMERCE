@@ -1,0 +1,44 @@
+﻿{% extends "admin/base_admin.html" %}
+{% block title %}Orders — CanvasCulture Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-header">
+  <div>
+    <h1 style="font-family:var(--font-serif);font-size:1.8rem;font-weight:300">Orders</h1>
+    <p style="color:var(--grey);font-size:0.8rem">{{ orders|length }} total</p>
+  </div>
+</div>
+
+<div style="border:1px solid var(--border);background:var(--dark-2)">
+  <table class="admin-table">
+    <thead>
+      <tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td style="color:var(--grey)">{{ order.id }}</td>
+        <td>
+          <div>{{ order.customer_name }}</div>
+          <div style="font-size:0.72rem;color:var(--grey)">{{ order.customer_email }}</div>
+        </td>
+        <td style="color:var(--grey)">{{ order.items|length }}</td>
+        <td style="color:var(--gold);font-family:var(--font-serif)">₹{{ '%.2f'|format(order.total) }}</td>
+        <td>
+          <span class="badge {% if order.payment_status == 'Paid' %}badge-success{% elif order.payment_status == 'Failed' %}badge-danger{% else %}badge-warning{% endif %}">
+            {{ order.payment_status }}
+          </span>
+        </td>
+        <td>
+          <span class="badge badge-info">{{ order.status }}</span>
+        </td>
+        <td style="color:var(--grey);font-size:0.75rem">{{ order.created_at.strftime('%d %b %Y') }}</td>
+        <td><a href="{{ url_for('admin.order_detail', id=order.id) }}" style="color:var(--gold);font-size:0.72rem">View →</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" style="text-align:center;color:var(--grey);padding:3rem">No orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
